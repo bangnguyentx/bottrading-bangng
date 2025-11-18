@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <i class="fas fa-chart-line"></i>
+                <h1>TradingSignals<span class="logo-pro">Pro</span></h1>
+            </div>
+            <p class="auth-subtitle">Đăng ký tài khoản mới</p>
+        </div>
+
+        <form method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="username">
+                    <i class="fas fa-user"></i>
+                    Tên đăng nhập
+                </label>
+                <input type="text" id="username" name="username" required 
+                       placeholder="Chọn tên đăng nhập (tối thiểu 3 ký tự)">
+                <small class="form-help">Tên đăng nhập phải có ít nhất 3 ký tự</small>
+            </div>
+
+            <div class="form-group">
+                <label for="email">
+                    <i class="fas fa-envelope"></i>
+                    Email (tùy chọn)
+                </label>
+                <input type="email" id="email" name="email" 
+                       placeholder="email@example.com">
+            </div>
+
+            <div class="form-group">
+                <label for="password">
+                    <i class="fas fa-lock"></i>
+                    Mật khẩu
+                </label>
+                <input type="password" id="password" name="password" required 
+                       placeholder="Mật khẩu (tối thiểu 6 ký tự)">
+                <small class="form-help">Mật khẩu phải có ít nhất 6 ký tự</small>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">
+                    <i class="fas fa-lock"></i>
+                    Xác nhận mật khẩu
+                </label>
+                <input type="password" id="confirm_password" name="confirm_password" required 
+                       placeholder="Nhập lại mật khẩu">
+            </div>
+
+            <button type="submit" class="auth-btn">
+                <i class="fas fa-user-plus"></i>
+                Đăng Ký
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Đã có tài khoản? 
+                <a href="{{ url_for('login') }}" class="auth-link">Đăng nhập ngay</a>
+            </p>
+        </div>
+
+        <div class="registration-benefits">
+            <h4>Lợi ích khi đăng ký:</h4>
+            <ul>
+                <li><i class="fas fa-check"></i> Truy cập tín hiệu real-time</li>
+                <li><i class="fas fa-check"></i> 10 chiến lược giao dịch đa dạng</li>
+                <li><i class="fas fa-check"></i> Phân loại Scalping/Intraday/Swing</li>
+                <li><i class="fas fa-check"></i> Thống kê hiệu suất chi tiết</li>
+                <li><i class="fas fa-check"></i> Hỗ trợ từ admin chuyên nghiệp</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="auth-background">
+        <div class="floating-chart" style="top: 15%; right: 10%;">
+            <i class="fas fa-trending-up"></i>
+        </div>
+        <div class="floating-chart" style="top: 70%; left: 10%;">
+            <i class="fas fa-chart-pie"></i>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const password = document.getElementById('password');
+    const confirmPassword = document.getElementById('confirm_password');
+    const form = document.querySelector('.auth-form');
+    
+    function validatePassword() {
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.setCustomValidity("Mật khẩu xác nhận không khớp!");
+        } else {
+            confirmPassword.setCustomValidity("");
+        }
+    }
+    
+    password.addEventListener('change', validatePassword);
+    confirmPassword.addEventListener('keyup', validatePassword);
+    
+    form.addEventListener('submit', function() {
+        const submitBtn = form.querySelector('.auth-btn');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang đăng ký...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

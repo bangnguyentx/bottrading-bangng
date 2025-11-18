@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <div class="welcome-content">
+            <h1>Chào mừng, <span class="username">{{ session.username }}</span>! 👋</h1>
+            <p>Hệ thống đang theo dõi 10 coin với 10 chiến lược giao dịch thông minh</p>
+        </div>
+        <div class="welcome-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ total_signals }}</h3>
+                    <span>Tổng tín hiệu</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon active">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ active_count }}</h3>
+                    <span>Đang active</span>
+                </div>
+            </div>
+            {% if is_admin %}
+            <div class="stat-card">
+                <div class="stat-icon win">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ win_count }}</h3>
+                    <span>Thắng</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon lose">
+                    <i class="fas fa-times"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>{{ lose_count }}</h3>
+                    <span>Thua</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h2>Hành Động Nhanh</h2>
+        <div class="action-grid">
+            <a href="{{ url_for('signals') }}" class="action-card">
+                <div class="action-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <h3>Tín Hiệu Mới</h3>
+                <p>Xem tất cả tín hiệu giao dịch mới nhất</p>
+            </a>
+            
+            <a href="{{ url_for('signals', type='scalping') }}" class="action-card">
+                <div class="action-icon scalping">
+                    <i class="fas fa-running"></i>
+                </div>
+                <h3>Scalping</h3>
+                <p>{{ scalping_signals|length }} tín hiệu nhanh</p>
+            </a>
+            
+            <a href="{{ url_for('signals', type='intraday') }}" class="action-card">
+                <div class="action-icon intraday">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3>Intraday</h3>
+                <p>{{ intraday_signals|length }} tín hiệu trong ngày</p>
+            </a>
+            
+            <a href="{{ url_for('signals', type='swing') }}" class="action-card">
+                <div class="action-icon swing">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3>Swing Trade</h3>
+                <p>{{ swing_signals|length }} tín hiệu dài hạn</p>
+            </a>
+
+            {% if is_admin %}
+            <a href="{{ url_for('admin') }}" class="action-card admin">
+                <div class="action-icon">
+                    <i class="fas fa-crown"></i>
+                </div>
+                <h3>Quản Trị</h3>
+                <p>Quản lý tín hiệu và người dùng</p>
+            </a>
+            
+            <form action="{{ url_for('api_scan') }}" method="POST" class="action-card scan-form">
+                <button type="submit" class="scan-btn">
+                    <div class="action-icon scan">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <h3>Quét Ngay</h3>
+                    <p>Chạy quét tín hiệu thủ công</p>
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Signals -->
+    <div class="recent-section">
+        <div class="section-header">
+            <h2>Tín Hiệu Gần Đây</h2>
+            <a href="{{ url_for('signals') }}" class="view-all">
+                Xem tất cả <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        
+        {% if signals %}
+        <div class="signals-grid">
+            {% for signal in signals[-6:] %}  {# Hiển thị 6 tín hiệu mới nhất #}
+            <div class="signal-card {{ signal.direction|lower }}">
+                <div class="signal-header">
+                    <div class="coin-badge">
+                        <span class="coin-symbol">{{ signal.coin.replace('USDT', '') }}</span>
+                        <span class="direction-badge {{ signal.direction|lower }}">
+                            {{ signal.direction }}
+                        </span>
+                    </div>
+                    <div class="signal-type {{ signal.signal_type|lower }}">
+                        {{ signal.signal_type }}
+                    </div>
+                </div>
+                
+                <div class="signal-info">
+                    <div class="info-row">
+                        <span class="info-label">Entry:</span>
+                        <span class="info-value">{{ "%.4f"|format(signal.entry) }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">TP:</span>
+                        <span class="info-value take-profit">{{ "%.4f"|format(signal.tp) }}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">SL:</span>
+                        <span class="info-value stop-loss">{{ "%.4f"|format(signal.sl) }}</span>
+                    </div>
+                </div>
+                
+                <div class="signal-footer">
+                    <span class="combo-name">{{ signal.combo_name }}</span>
+                    <span class="signal-time">{{ signal.timestamp }}</span>
+                </div>
+
+                {% if is_admin and signal.win_lose %}
+                <div class="signal-result {{ signal.win_lose }}">
+                    <i class="fas fa-{% if signal.win_lose == 'win' %}trophy{% else %}times{% endif %}"></i>
+                    {{ signal.win_lose|upper }}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-bell-slash"></i>
+            <h3>Chưa có tín hiệu nào</h3>
+            <p>Hệ thống sẽ tự động quét và hiển thị tín hiệu tại đây</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Performance Chart (Admin only) -->
+    {% if is_admin and win_count + lose_count > 0 %}
+    <div class="performance-section">
+        <h2>Hiệu Suất Giao Dịch</h2>
+        <div class="chart-container">
+            <canvas id="performanceChart"></canvas>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Xử lý form quét tín hiệu
+    const scanForm = document.querySelector('.scan-form');
+    if (scanForm) {
+        scanForm.addEventListener('submit', function(e) {
+            const button = this.querySelector('.scan-btn');
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang quét...';
+            button.disabled = true;
+        });
+    }
+
+    // Chart cho admin
+    {% if is_admin and win_count + lose_count > 0 %}
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    const performanceChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Thắng', 'Thua'],
+            datasets: [{
+                data: [{{ win_count }}, {{ lose_count }}],
+                backgroundColor: ['#10b981', '#ef4444'],
+                borderWidth: 2,
+                borderColor: '#1e293b'
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: '#e2e8f0',
+                        font: {
+                            size: 14
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#1e293b',
+                    titleColor: '#e2e8f0',
+                    bodyColor: '#e2e8f0'
+                }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}

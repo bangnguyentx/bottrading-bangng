@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Signals Pro - Hệ thống tín hiệu giao dịch chuyên nghiệp</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h3>Đang tải Trading Signals Pro...</h3>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <i class="fas fa-chart-line"></i>
+                <span>TradingSignals<span class="logo-pro">Pro</span></span>
+            </div>
+            
+            <div class="nav-menu" id="navMenu">
+                {% if session.username %}
+                <a href="{{ url_for('dashboard') }}" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('signals') }}" class="nav-link">
+                    <i class="fas fa-bell"></i>
+                    <span>Tín Hiệu</span>
+                </a>
+                <a href="{{ url_for('results') }}" class="nav-link">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Kết Quả</span>
+                </a>
+                {% if is_admin %}
+                <a href="{{ url_for('admin') }}" class="nav-link admin-link">
+                    <i class="fas fa-crown"></i>
+                    <span>Quản Trị</span>
+                </a>
+                {% endif %}
+                <a href="{{ url_for('profile') }}" class="nav-link">
+                    <i class="fas fa-user"></i>
+                    <span>{{ session.username }}</span>
+                </a>
+                <a href="{{ url_for('logout') }}" class="nav-link logout">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Đăng Xuất</span>
+                </a>
+                {% endif %}
+            </div>
+            
+            <div class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">
+                        <span class="flash-icon">
+                            {% if category == 'success' %}
+                                <i class="fas fa-check-circle"></i>
+                            {% elif category == 'error' %}
+                                <i class="fas fa-exclamation-circle"></i>
+                            {% else %}
+                                <i class="fas fa-info-circle"></i>
+                            {% endif %}
+                        </span>
+                        <span class="flash-text">{{ message }}</span>
+                        <button class="flash-close" onclick="this.parentElement.remove()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Liên Hệ Admin</h4>
+                    <div class="contact-links">
+                        <a href="https://m.facebook.com/bang.nguyen.17040/" target="_blank" class="contact-link">
+                            <i class="fab fa-facebook"></i>
+                            <span>Bằng Nguyễn</span>
+                        </a>
+                        <a href="https://t.me/HOANGDUNGG789" target="_blank" class="contact-link">
+                            <i class="fab fa-telegram"></i>
+                            <span>@HOANGDUNGG789</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Thông Tin</h4>
+                    <p>Hệ thống tín hiệu giao dịch crypto tự động với 10 chiến lược Smart Money Concepts.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Lưu Ý</h4>
+                    <p>Tín hiệu chỉ mang tính chất tham khảo. Luôn quản lý rủi ro và không đầu tư nhiều hơn số tiền bạn có thể mất.</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2024 <span class="copyright">Bản quyền thuộc về Nguyễn Bằng</span>. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,308 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="signals-container">
+    <!-- Header -->
+    <div class="signals-header">
+        <h1>📊 Tín Hiệu Giao Dịch</h1>
+        <p>Danh sách tất cả tín hiệu từ hệ thống</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <div class="filter-tabs">
+            <a href="{{ url_for('signals', type='all') }}" 
+               class="filter-tab {% if signal_type == 'all' %}active{% endif %}">
+                <i class="fas fa-list"></i>
+                Tất Cả
+            </a>
+            <a href="{{ url_for('signals', type='scalping') }}" 
+               class="filter-tab {% if signal_type == 'scalping' %}active{% endif %}">
+                <i class="fas fa-running"></i>
+                Scalping
+            </a>
+            <a href="{{ url_for('signals', type='intraday') }}" 
+               class="filter-tab {% if signal_type == 'intraday' %}active{% endif %}">
+                <i class="fas fa-clock"></i>
+                Intraday
+            </a>
+            <a href="{{ url_for('signals', type='swing') }}" 
+               class="filter-tab {% if signal_type == 'swing' %}active{% endif %}">
+                <i class="fas fa-chart-line"></i>
+                Swing
+            </a>
+            <a href="{{ url_for('signals', type='active') }}" 
+               class="filter-tab {% if signal_type == 'active' %}active{% endif %}">
+                <i class="fas fa-bolt"></i>
+                Đang Active
+            </a>
+        </div>
+
+        <div class="filter-stats">
+            <span class="stat-badge">
+                <i class="fas fa-filter"></i>
+                {{ signals|length }} tín hiệu
+            </span>
+        </div>
+    </div>
+
+    <!-- Signals Table -->
+    <div class="signals-table-container">
+        {% if signals %}
+        <div class="table-responsive">
+            <table class="signals-table">
+                <thead>
+                    <tr>
+                        <th>Coin</th>
+                        <th>Hướng</th>
+                        <th>Entry</th>
+                        <th>TP</th>
+                        <th>SL</th>
+                        <th>Combo</th>
+                        <th>Loại</th>
+                        <th>Thời Gian</th>
+                        {% if is_admin %}
+                        <th>Kết Quả</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for signal in signals %}
+                    <tr class="signal-row {{ signal.direction|lower }}">
+                        <td>
+                            <div class="coin-cell">
+                                <span class="coin-symbol">{{ signal.coin.replace('USDT', '') }}</span>
+                                <span class="coin-full">{{ signal.coin }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="direction-badge {{ signal.direction|lower }}">
+                                {{ signal.direction }}
+                            </span>
+                        </td>
+                        <td class="price-cell">{{ "%.4f"|format(signal.entry) }}</td>
+                        <td class="price-cell take-profit">{{ "%.4f"|format(signal.tp) }}</td>
+                        <td class="price-cell stop-loss">{{ "%.4f"|format(signal.sl) }}</td>
+                        <td>
+                            <div class="combo-cell">
+                                <span class="combo-name">{{ signal.combo_name }}</span>
+                                <button class="combo-info-btn" onclick="showComboDetails('{{ signal.combo_name }}')">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="type-badge {{ signal.signal_type|lower }}">
+                                {{ signal.signal_type }}
+                            </span>
+                        </td>
+                        <td class="time-cell">{{ signal.timestamp }}</td>
+                        {% if is_admin %}
+                        <td>
+                            {% if signal.win_lose %}
+                            <span class="result-badge {{ signal.win_lose }}">
+                                <i class="fas fa-{% if signal.win_lose == 'win' %}trophy{% else %}times{% endif %}"></i>
+                                {{ signal.win_lose|upper }}
+                            </span>
+                            {% else %}
+                            <div class="action-buttons">
+                                <form method="POST" action="{{ url_for('admin') }}" class="inline-form">
+                                    <input type="hidden" name="signal_id" value="{{ signal.id }}">
+                                    <button type="submit" name="action" value="win" class="btn-win">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('admin') }}" class="inline-form">
+                                    <input type="hidden" name="signal_id" value="{{ signal.id }}">
+                                    <button type="submit" name="action" value="lose" class="btn-lose">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-bell-slash"></i>
+            <h3>Không có tín hiệu nào</h3>
+            <p>Không tìm thấy tín hiệu nào phù hợp với bộ lọc hiện tại</p>
+            <a href="{{ url_for('signals', type='all') }}" class="btn-primary">
+                <i class="fas fa-sync"></i>
+                Xem tất cả tín hiệu
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if signals|length > 20 %}
+    <div class="pagination">
+        <button class="page-btn disabled">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <span class="page-info">Trang 1</span>
+        <button class="page-btn">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Combo Details Modal -->
+<div id="comboModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="comboModalTitle">Chi Tiết Combo</h3>
+            <button class="modal-close" onclick="closeComboModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="comboDetails"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Combo details data
+const comboDetails = {
+    "FVG Squeeze Pro": {
+        description: "Kết hợp Fair Value Gap với Bollinger Band Squeeze",
+        strategy: "Breakout từ vùng nén biến động",
+        timeframe: "H1/H4",
+        winrate: "70-75%",
+        riskReward: "1:2",
+        indicators: "BB, KC, EMA, Volume"
+    },
+    "MACD Order Block Retest": {
+        description: "Retest Order Block kết hợp MACD cross",
+        strategy: "Trend continuation",
+        timeframe: "H4/D1", 
+        winrate: "65-70%",
+        riskReward: "1:2.5",
+        indicators: "MACD, EMA, Order Blocks"
+    },
+    "VWAP EMA Scalp": {
+        description: "Scalping với VWAP và EMA cross",
+        strategy: "Intraday momentum", 
+        timeframe: "M5/M15",
+        winrate: "60-65%",
+        riskReward: "1:1",
+        indicators: "VWAP, EMA, Volume"
+    },
+    "RSI Extreme Bounce": {
+        description: "Bounce từ vùng RSI cực kỳ quá mua/quá bán",
+        strategy: "Mean reversion",
+        timeframe: "M15/H1",
+        winrate: "68-72%", 
+        riskReward: "1:1.5",
+        indicators: "RSI, Price Action"
+    },
+    "EMA Stack Volume": {
+        description: "EMA xếp chồng kết hợp volume confirmation",
+        strategy: "Trend following",
+        timeframe: "H1/H4",
+        winrate: "70-75%",
+        riskReward: "1:1.8", 
+        indicators: "EMA, Volume, RSI"
+    },
+    "Support/Resistance Break": {
+        description: "Break và retest Support/Resistance",
+        strategy: "Breakout trading",
+        timeframe: "H4/D1",
+        winrate: "68-72%",
+        riskReward: "1:2",
+        indicators: "S/R, MACD, Volume"
+    },
+    "FVG Momentum": {
+        description: "FVG kết hợp momentum MACD",
+        strategy: "Momentum scalp", 
+        timeframe: "M15/H1",
+        winrate: "62-67%",
+        riskReward: "1:1.2",
+        indicators: "FVG, MACD, VWAP"
+    },
+    "BB Squeeze Break": {
+        description: "Breakout từ Bollinger Band squeeze",
+        strategy: "Volatility breakout",
+        timeframe: "M15/H1",
+        winrate: "65-70%",
+        riskReward: "1:1.5",
+        indicators: "BB, Volume"
+    },
+    "MACD Divergence": {
+        description: "MACD divergence với price action",
+        strategy: "Reversal trading",
+        timeframe: "H4/D1", 
+        winrate: "70-75%",
+        riskReward: "1:2.5",
+        indicators: "MACD, Price, RSI"
+    },
+    "Trend Pullback": {
+        description: "Pullback trong xu hướng chính",
+        strategy: "Trend pullback",
+        timeframe: "H1/H4",
+        winrate: "65-70%",
+        riskReward: "1:2", 
+        indicators: "EMA, Volume, RSI"
+    }
+};
+
+function showComboDetails(comboName) {
+    const combo = comboDetails[comboName];
+    if (!combo) return;
+    
+    document.getElementById('comboModalTitle').textContent = comboName;
+    document.getElementById('comboDetails').innerHTML = `
+        <div class="combo-detail-grid">
+            <div class="detail-item">
+                <label>Mô tả:</label>
+                <span>${combo.description}</span>
+            </div>
+            <div class="detail-item">
+                <label>Chiến lược:</label>
+                <span>${combo.strategy}</span>
+            </div>
+            <div class="detail-item">
+                <label>Khung thời gian:</label>
+                <span>${combo.timeframe}</span>
+            </div>
+            <div class="detail-item">
+                <label>Winrate ước tính:</label>
+                <span class="winrate-badge">${combo.winrate}</span>
+            </div>
+            <div class="detail-item">
+                <label>Risk/Reward:</label>
+                <span class="rr-badge">${combo.riskReward}</span>
+            </div>
+            <div class="detail-item">
+                <label>Indicators:</label>
+                <span>${combo.indicators}</span>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('comboModal').style.display = 'block';
+}
+
+function closeComboModal() {
+    document.getElementById('comboModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('comboModal');
+    if (event.target === modal) {
+        closeComboModal();
+    }
+}
+</script>
+{% endblock %}

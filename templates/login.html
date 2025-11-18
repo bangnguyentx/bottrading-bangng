@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <i class="fas fa-chart-line"></i>
+                <h1>TradingSignals<span class="logo-pro">Pro</span></h1>
+            </div>
+            <p class="auth-subtitle">Đăng nhập vào hệ thống tín hiệu giao dịch</p>
+        </div>
+
+        <form method="POST" class="auth-form">
+            <div class="form-group">
+                <label for="username">
+                    <i class="fas fa-user"></i>
+                    Tên đăng nhập
+                </label>
+                <input type="text" id="username" name="username" required 
+                       placeholder="Nhập tên đăng nhập của bạn">
+            </div>
+
+            <div class="form-group">
+                <label for="password">
+                    <i class="fas fa-lock"></i>
+                    Mật khẩu
+                </label>
+                <input type="password" id="password" name="password" required 
+                       placeholder="Nhập mật khẩu của bạn">
+            </div>
+
+            <button type="submit" class="auth-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                Đăng Nhập
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Chưa có tài khoản? 
+                <a href="{{ url_for('register') }}" class="auth-link">Đăng ký ngay</a>
+            </p>
+        </div>
+
+        <div class="auth-features">
+            <div class="feature-item">
+                <i class="fas fa-robot"></i>
+                <span>10 Chiến lược AI</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-bolt"></i>
+                <span>Tín hiệu real-time</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-shield-alt"></i>
+                <span>Bảo mật cao</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="auth-background">
+        <div class="floating-chart" style="top: 20%; left: 10%;">
+            <i class="fas fa-chart-line"></i>
+        </div>
+        <div class="floating-chart" style="top: 60%; right: 15%;">
+            <i class="fas fa-coins"></i>
+        </div>
+        <div class="floating-chart" style="bottom: 20%; left: 20%;">
+            <i class="fas fa-rocket"></i>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.auth-form');
+    const submitBtn = form.querySelector('.auth-btn');
+    
+    form.addEventListener('submit', function() {
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang đăng nhập...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}
